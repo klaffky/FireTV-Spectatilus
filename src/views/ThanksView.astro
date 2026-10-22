@@ -1,0 +1,32 @@
+---
+// Zielseite nach dem Versand ohne JavaScript (Weiterleitung von Web3Forms).
+import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
+import { path, useT, type Lang } from '../i18n/ui.ts';
+
+interface Props {
+  lang: Lang;
+  kind: 'reserve' | 'contact';
+}
+const { lang, kind } = Astro.props;
+const t = useT(lang);
+---
+
+<Base lang={lang} route={kind === 'reserve' ? 'reserveThanks' : 'contactThanks'} title={`${t(kind === 'reserve' ? 'res.done.sentTitle' : 'form.sent')} – Spreeblick`} description={t('res.done.text')} noindex>
+  <div class="container-x max-w-3xl py-16 md:py-24">
+    <section class="rounded-[1.75rem] border border-line bg-card p-7 sm:p-10" role="status">
+      <div class="flex size-14 items-center justify-center rounded-full bg-spree text-paper" aria-hidden="true">
+        <Icon name="check" class="size-7" />
+      </div>
+      <h1 class="mt-6 text-[clamp(1.8rem,4vw,2.5rem)] font-medium text-spree">
+        {t(kind === 'reserve' ? 'res.done.sentTitle' : 'form.sent')}
+      </h1>
+      {kind === 'reserve' && <p class="mt-3 text-lg text-ink-soft">{t('res.done.text')}</p>}
+      {kind === 'reserve' && <p class="mt-4 text-sm text-ink-soft">{t('terrace')}</p>}
+      <div class="mt-8 flex flex-wrap gap-3">
+        <a href={path('home', lang)} class="btn-ghost text-spree">{t('res.done.home')}</a>
+        <a href={path('menu', lang)} class="btn-ghost text-spree">{t('nav.menu')}</a>
+      </div>
+    </section>
+  </div>
+</Base>

@@ -1,0 +1,92 @@
+---
+import '../styles/global.css';
+import frauncesUrl from '@fontsource-variable/fraunces/files/fraunces-latin-soft-normal.woff2?url';
+import figtreeUrl from '@fontsource-variable/figtree/files/figtree-latin-wght-normal.woff2?url';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { site } from '../config/site.ts';
+import { path, withBase, useT, type Lang, type RouteKey } from '../i18n/ui.ts';
+
+interface Props {
+  lang: Lang;
+  route: RouteKey;
+  title: string;
+  description: string;
+  /** Transparenter Header über dunklem Hero */
+  overlayHeader?: boolean;
+  noindex?: boolean;
+  jsonLd?: object;
+}
+
+const { lang, route, title, description, overlayHeader = false, noindex = false, jsonLd } = Astro.props;
+const t = useT(lang);
+const origin = Astro.site ?? site.url;
+const canonical = new URL(path(route, lang), origin).href;
+const alternates = (['de', 'en'] as const).map((l) => ({ l, href: new URL(path(route, l), origin).href }));
+const ogImage = new URL(withBase('/og.jpg'), origin).href;
+---
+
+<!doctype html>
+<html lang={lang} class="no-js">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    {noindex ? <meta name="robots" content="noindex" /> : <link rel="canonical" href={canonical} />}
+    {!noindex && alternates.map(({ l, href }) => <link rel="alternate" hreflang={l} href={href} />)}
+    {!noindex && <link rel="alternate" hreflang="x-default" href={alternates[0].href} />}
+    <meta name="theme-color" content="#173f3b" />
+    <link rel="icon" href={withBase('/favicon.ico')} sizes="any" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content={t('meta.locale')} />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="preload" href={frauncesUrl} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={figtreeUrl} as="font" type="font/woff2" crossorigin />
+
+    <!--
+      Bewegung nur mit JavaScript und ohne „reduzierte Bewegung“. Fällt das
+      Animationsskript aus, wird nach 2,5 s alles sichtbar geschaltet.
+    -->
+    <script is:inline>
+      (function (d) {
+        var r = d.documentElement;
+        r.classList.replace('no-js', 'js');
+        if ('IntersectionObserver' in window && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+          r.classList.add('motion');
+          setTimeout(function () {
+            if (!r.classList.contains('motion-ready')) r.classList.remove('motion');
+          }, 2500);
+        }
+      })(document);
+    </script>
+
+    {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
+  </head>
+  <body class="min-h-dvh flex flex-col antialiased">
+    <a
+      href="#main"
+      class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:rounded-full focus:bg-ink focus:px-5 focus:py-3 focus:text-paper"
+    >
+      {t('skip')}
+    </a>
+    <Header lang={lang} route={route} overlay={overlayHeader} />
+    <main id="main" class="flex-1" tabindex="-1">
+      <slot />
+    </main>
+    <Footer lang={lang} />
+    <script>
+      import '../scripts/motion.ts';
+      import '../scripts/header.ts';
+    </script>
+  </body>
+</html>

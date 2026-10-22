@@ -1,0 +1,91 @@
+---
+import Logo from './Logo.astro';
+import Icon from './Icon.astro';
+import OpeningHours from './OpeningHours.astro';
+import SpreeWave from './SpreeWave.astro';
+import { site } from '../config/site.ts';
+import { path, useT, type Lang } from '../i18n/ui.ts';
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const t = useT(lang);
+const year = new Date().getFullYear();
+---
+
+<footer class="relative overflow-hidden bg-spree-deep text-paper" id="wann-wo">
+  <SpreeWave class="absolute inset-x-0 top-0 h-16 w-full text-spree-light/70" />
+
+  <section class="container-x pb-14 pt-24 md:pt-28" aria-labelledby="when-title">
+    <h2 id="when-title" class="font-display text-[clamp(2.4rem,6vw,4.25rem)] font-medium" data-reveal>
+      {t('when.title')}
+    </h2>
+
+    <div class="mt-12 grid gap-12 md:grid-cols-3 md:gap-10 lg:gap-16">
+      <div data-reveal="left" style="--i:0">
+        <h3 class="mb-4 flex items-center gap-2.5 font-display text-2xl">
+          <Icon name="clock" class="size-6 text-amber" />
+          {t('hours.title')}
+        </h3>
+        <OpeningHours lang={lang} />
+      </div>
+
+      <div data-reveal style="--i:1">
+        <h3 class="mb-5 flex items-center gap-2.5 font-display text-2xl">
+          <Icon name="pin" class="size-6 text-amber" />
+          {t('directions.title')}
+        </h3>
+        <div class="street-sign mb-6 -rotate-1">
+          <span class="text-[0.7rem] font-bold uppercase tracking-[0.2em]">{site.address.district}</span>
+          <span class="text-2xl font-bold tracking-tight">Propststraße</span>
+        </div>
+        <address class="not-italic leading-relaxed text-paper/85">
+          {site.name}<br />
+          {site.address.street}<br />
+          {`${site.address.zip} ${site.address.city}`}
+        </address>
+        <div class="mt-5 flex flex-wrap gap-3">
+          <a href={site.maps.apple} class="btn-ghost !min-h-11 text-sm" rel="noopener" target="_blank">
+            <Icon name="map" class="size-4" /> Apple Maps<span class="sr-only"> {t('a11y.newWindow')}</span>
+          </a>
+          <a href={site.maps.google} class="btn-ghost !min-h-11 text-sm" rel="noopener" target="_blank">
+            <Icon name="map" class="size-4" /> Google Maps<span class="sr-only"> {t('a11y.newWindow')}</span>
+          </a>
+        </div>
+      </div>
+
+      <div data-reveal="right" style="--i:2">
+        <h3 class="mb-4 flex items-center gap-2.5 font-display text-2xl">
+          <Icon name="phone" class="size-6 text-amber" />
+          {t('contact.title')}
+        </h3>
+        <dl class="grid grid-cols-[auto_1fr] gap-x-5 gap-y-2.5 text-paper/85">
+          <dt class="text-paper/60">{t('contact.tel')}</dt>
+          <dd><a href={site.phone.href} class="link-flow font-semibold text-paper">{site.phone.displayGrouped}</a></dd>
+          <dt class="text-paper/60">{t('contact.fax')}</dt>
+          <dd>{site.fax.display}</dd>
+          <dt class="text-paper/60">{t('contact.email')}</dt>
+          <dd><a href={`mailto:${site.email}`} class="link-flow break-all">{site.email}</a></dd>
+        </dl>
+        <a href={path('contact', lang)} class="mt-6 inline-flex items-center gap-2 font-semibold text-amber-soft hover:text-amber">
+          {t('contact.formLink')}
+          <Icon name="arrow" class="size-4" />
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <div class="border-t border-paper/10">
+    <div class="container-x flex flex-col gap-5 py-7 text-sm text-paper/70 md:flex-row md:items-center md:justify-between">
+      <a href={path('home', lang)} class="block w-36 text-paper/90" aria-label={site.name}><Logo /></a>
+      <p>© {year} {site.name}</p>
+      <nav aria-label={t('a11y.legal')}>
+        <ul class="flex flex-wrap gap-x-6 gap-y-2">
+          <li><a href={path('imprint', lang)} class="link-flow">{t('footer.imprint')}</a></li>
+          <li><a href={path('privacy', lang)} class="link-flow">{t('footer.privacy')}</a></li>
+        </ul>
+      </nav>
+    </div>
+  </div>
+</footer>

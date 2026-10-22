@@ -1,0 +1,441 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/fraunces/soft.css';
+@import '@fontsource-variable/fraunces/soft-italic.css';
+@import '@fontsource-variable/figtree/wght.css';
+
+/* ------------------------------------------------------------------
+   Farbwelt: Wintergarten-Grün der Stühle, Bernstein der Tiffany-Lampen,
+   Backstein der Nikolaikirche, Papier der alten Speisekarten.
+------------------------------------------------------------------- */
+@theme {
+  --color-paper: #f6efe3;
+  --color-paper-deep: #ece1cd;
+  --color-card: #fffaf1;
+  --color-ink: #1c2622;
+  --color-ink-soft: #4d5952;
+  --color-spree: #173f3b;
+  --color-spree-deep: #0e2926;
+  --color-spree-light: #2c5e57;
+  --color-sage: #8d9c74;
+  --color-amber: #e3962f;
+  --color-amber-soft: #f3c77e;
+  --color-brick: #a3402a;
+  --color-brick-deep: #84311f;
+  --color-line: #dccdb4;
+
+  --font-display: 'Fraunces Variable', 'Iowan Old Style', Georgia, serif;
+  --font-sans: 'Figtree Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+    scroll-padding-top: 6rem;
+  }
+  body {
+    background: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: 1.0625rem;
+    line-height: 1.65;
+  }
+  h1,
+  h2,
+  h3,
+  .font-display {
+    font-family: var(--font-display);
+    font-variation-settings: 'SOFT' 100;
+    letter-spacing: -0.015em;
+    line-height: 1.08;
+    text-wrap: balance;
+  }
+  p {
+    text-wrap: pretty;
+  }
+  ::selection {
+    background: var(--color-amber-soft);
+    color: var(--color-ink);
+  }
+  :focus-visible {
+    outline: 3px solid var(--color-amber);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* ------------------------------------------------------------------
+   Wiederkehrende Bausteine
+------------------------------------------------------------------- */
+@layer components {
+  .container-x {
+    width: 100%;
+    max-width: 76rem;
+    margin-inline: auto;
+    padding-inline: clamp(1rem, 4vw, 2.5rem);
+  }
+
+  .kicker {
+    font-family: var(--font-sans);
+    font-size: 0.78rem;
+    font-weight: 650;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-brick);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .kicker::before {
+    content: '';
+    width: 1.75rem;
+    height: 1px;
+    background: currentColor;
+  }
+
+  /* Papierstruktur – sehr dezentes Rauschen statt Stockfoto-Optik */
+  .grain {
+    position: relative;
+    isolation: isolate;
+  }
+  .grain::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0.35;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.45 0 0 0 0 0.36 0 0 0 0 0.22 0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* Berliner Straßenschild (weißes Emailleschild mit schwarzem Rahmen) */
+  .street-sign {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    background: #fbfbf7;
+    color: #111;
+    border: 2px solid #111;
+    box-shadow:
+      0 0 0 4px #fbfbf7,
+      0 0 0 5px #b9b4a8,
+      0 14px 30px -18px rgb(0 0 0 / 0.55);
+    border-radius: 3px;
+    padding: 0.35rem 1.4rem 0.5rem;
+    font-family: 'DIN Alternate', 'Arial Narrow', var(--font-sans);
+    line-height: 1.1;
+  }
+
+  /* Formularfelder */
+  .field-label {
+    display: block;
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-bottom: 0.4rem;
+  }
+  .field {
+    width: 100%;
+    min-height: 3.1rem;
+    border-radius: 0.75rem;
+    border: 1.5px solid var(--color-line);
+    background: var(--color-card);
+    padding: 0.7rem 0.95rem;
+    font: inherit;
+    color: inherit;
+    transition:
+      border-color 0.2s,
+      box-shadow 0.2s;
+  }
+  .field:hover {
+    border-color: #c7b597;
+  }
+  .field:focus {
+    outline: none;
+    border-color: var(--color-spree);
+    box-shadow: 0 0 0 4px rgb(23 63 59 / 0.16);
+  }
+  .field[aria-invalid='true'] {
+    border-color: var(--color-brick);
+    box-shadow: 0 0 0 3px rgb(163 64 42 / 0.12);
+  }
+  select.field {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9' fill='none' stroke='%231c2622' stroke-width='2'%3E%3Cpath d='m1 1 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    padding-right: 2.6rem;
+  }
+  .field-error {
+    display: flex;
+    gap: 0.4rem;
+    align-items: flex-start;
+    color: var(--color-brick-deep);
+    font-size: 0.9rem;
+    font-weight: 550;
+    margin-top: 0.4rem;
+  }
+  .field-error:empty {
+    display: none;
+  }
+  .check {
+    width: 1.35rem;
+    height: 1.35rem;
+    flex: none;
+    margin-top: 0.15rem;
+    accent-color: var(--color-spree);
+  }
+
+  /* Rechtstexte */
+  .prose-legal {
+    max-width: 46rem;
+  }
+  .prose-legal h2 {
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    margin: 3rem 0 1rem;
+    color: var(--color-spree);
+  }
+  .prose-legal h3 {
+    font-size: 1.25rem;
+    margin: 2rem 0 0.6rem;
+  }
+  .prose-legal p,
+  .prose-legal ul {
+    margin: 0 0 1rem;
+    color: var(--color-ink-soft);
+  }
+  .prose-legal ul {
+    list-style: disc;
+    padding-left: 1.25rem;
+  }
+  .prose-legal a {
+    color: var(--color-spree);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    overflow-wrap: anywhere;
+  }
+  .prose-legal .caps {
+    font-size: 0.92rem;
+    letter-spacing: 0.01em;
+  }
+}
+
+@layer components {
+/* ------------------------------------------------------------------
+   Call-to-Action „Jetzt reservieren“
+   Lebendig durch weichen Lichtschimmer, Pfeil-Nudge und Fokus-Ring –
+   ohne Daueranimation.
+------------------------------------------------------------------- */
+.btn-cta {
+  --cta-bg: var(--color-brick);
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  min-height: 3rem;
+  padding: 0.8rem 1.5rem;
+  border-radius: 999px;
+  background: var(--cta-bg);
+  color: #fff8ee;
+  font-weight: 650;
+  letter-spacing: 0.01em;
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.18) inset,
+    0 10px 24px -14px rgb(132 49 31 / 0.9);
+  transition:
+    background-color 0.35s var(--ease-out-soft),
+    box-shadow 0.35s var(--ease-out-soft),
+    transform 0.35s var(--ease-out-soft);
+  -webkit-tap-highlight-color: transparent;
+}
+.btn-cta::before {
+  /* Lichtschimmer wie Lampenschein auf Messing */
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(110deg, transparent 30%, rgb(243 199 126 / 0.55) 50%, transparent 70%);
+  transform: translateX(-120%);
+}
+.btn-cta .cta-arrow {
+  transition: transform 0.35s var(--ease-out-soft);
+}
+.btn-cta:hover {
+  --cta-bg: var(--color-brick-deep);
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.2) inset,
+    0 16px 30px -14px rgb(132 49 31 / 0.95);
+}
+.btn-cta:active {
+  transform: scale(0.98);
+}
+.btn-cta:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 3px var(--color-paper),
+    0 0 0 6px var(--color-amber),
+    0 16px 30px -14px rgb(132 49 31 / 0.95);
+}
+.btn-cta[aria-disabled='true'],
+.btn-cta:disabled {
+  opacity: 0.7;
+  cursor: progress;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .btn-cta:hover,
+  .btn-cta:focus-visible {
+    transform: translateY(-2px);
+  }
+  .btn-cta:hover::before,
+  .btn-cta:focus-visible::before {
+    transform: translateX(120%);
+    transition: transform 0.9s var(--ease-out-soft);
+  }
+  .btn-cta:hover .cta-arrow,
+  .btn-cta:focus-visible .cta-arrow {
+    transform: translateX(4px);
+  }
+  .btn-cta:active {
+    transform: translateY(0) scale(0.98);
+  }
+}
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 3rem;
+  padding: 0.75rem 1.35rem;
+  border-radius: 999px;
+  border: 1.5px solid currentColor;
+  font-weight: 600;
+  transition:
+    background-color 0.25s,
+    color 0.25s;
+}
+.btn-ghost:hover {
+  background: color-mix(in oklab, currentColor 10%, transparent);
+}
+
+/* Unterstrich, der beim Hover „mitfließt“ */
+.link-flow {
+  background: linear-gradient(currentColor, currentColor) left bottom / 0 1.5px no-repeat;
+  transition: background-size 0.35s var(--ease-out-soft);
+  padding-bottom: 2px;
+}
+.link-flow:hover,
+.link-flow[aria-current='page'] {
+  background-size: 100% 1.5px;
+}
+}
+
+/* ------------------------------------------------------------------
+   Scroll-Animationen
+   Versteckte Ausgangszustände gibt es nur, wenn <html> die Klasse
+   `motion` trägt – die wird ausschließlich bei aktivem JavaScript UND
+   ohne „prefers-reduced-motion: reduce“ gesetzt. Ohne JS oder mit
+   reduzierter Bewegung ist alles sofort sichtbar.
+------------------------------------------------------------------- */
+.motion [data-reveal] {
+  opacity: 0;
+  transform: translate3d(0, var(--reveal-y, 18px), 0);
+  transition:
+    opacity 0.7s var(--ease-out-soft),
+    transform 0.9s var(--ease-out-soft);
+  transition-delay: calc(var(--i, 0) * 70ms);
+}
+.motion [data-reveal='left'] {
+  transform: translate3d(-28px, 0, 0);
+}
+.motion [data-reveal='right'] {
+  transform: translate3d(28px, 0, 0);
+}
+.motion [data-reveal='fade'] {
+  transform: none;
+}
+.motion [data-reveal='scale'] {
+  transform: scale(0.97);
+}
+/* Speisekarte: kürzer und mit kleinerem Weg, damit Lesen nie warten muss */
+.motion [data-reveal='item'] {
+  --reveal-y: 10px;
+  transition-duration: 0.45s, 0.55s;
+  transition-delay: calc(min(var(--i, 0), 8) * 45ms);
+}
+.motion [data-reveal].is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* Hero-Intro: reine CSS-Animation, startet mit dem ersten Paint
+   (kein Warten auf JavaScript → gut für LCP) */
+@keyframes intro-rise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 26px, 0);
+  }
+}
+@keyframes intro-scale {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+.motion [data-intro] {
+  animation: intro-rise 1s var(--ease-out-soft) both;
+  animation-delay: calc(var(--i, 0) * 110ms + 60ms);
+}
+.motion [data-intro='scale'] {
+  animation-name: intro-scale;
+  animation-duration: 1.3s;
+}
+
+.motion .success-in {
+  animation: intro-rise 0.8s var(--ease-out-soft) both;
+}
+
+/* Gezeichnete Linien (Spree-Welle, Nikolaikirche) */
+.motion [data-draw] path {
+  stroke-dasharray: var(--len, 1200);
+  stroke-dashoffset: var(--len, 1200);
+  transition: stroke-dashoffset 2.4s var(--ease-out-soft);
+}
+.motion [data-draw].is-visible path {
+  stroke-dashoffset: 0;
+}
+
+/* Parallax-Ebenen bekommen nur mit Bewegung ein will-change */
+.motion [data-parallax] {
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Header-Zustand nach dem Scrollen */
+.site-header[data-scrolled='true'] {
+  background: rgb(246 239 227 / 0.92);
+  backdrop-filter: saturate(1.2) blur(10px);
+  -webkit-backdrop-filter: saturate(1.2) blur(10px);
+  color: var(--color-ink);
+  box-shadow: 0 1px 0 var(--color-line);
+}

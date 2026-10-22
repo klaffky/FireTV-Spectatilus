@@ -1,0 +1,259 @@
+---
+import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
+import TerraceNotice from '../components/TerraceNotice.astro';
+import ReservationSuccess from '../components/ReservationSuccess.astro';
+import { site, reservationRules as rules } from '../config/site.ts';
+import { path, useT, days, type Lang } from '../i18n/ui.ts';
+import { timeSlots } from '../lib/reservation.ts';
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const t = useT(lang);
+// Ohne JavaScript: direkter Versand über Web3Forms, sonst E-Mail-Programm
+const formKey = import.meta.env.PUBLIC_WEB3FORMS_KEY as string | undefined;
+const noJsAction = formKey ? 'https://api.web3forms.com/submit' : `mailto:${site.email}?subject=Reservierungsanfrage`;
+
+// Alle Uhrzeiten eines regulären Öffnungstags – das Skript filtert je nach Datum.
+const allSlots = timeSlots('2000-01-03', new Date('1999-12-01T00:00:00Z'));
+const vars = {
+  n: rules.maxAdvanceDays,
+  from: rules.firstSeating,
+  to: rules.lastSeating,
+  h: rules.minLeadMinutes / 60,
+};
+const messages = {
+  required: t('err.required'),
+  dateInvalid: t('err.dateInvalid'),
+  datePast: t('err.datePast'),
+  dateTooFar: t('err.dateTooFar', vars),
+  closedWeekday: t('err.closedWeekday'),
+  closedDate: t('err.closedDate'),
+  timeInvalid: t('err.timeInvalid'),
+  timeOutsideHours: t('err.timeOutsideHours', vars),
+  timeTooSoon: t('err.timeTooSoon', vars),
+  guestsInvalid: t('err.guestsInvalid'),
+  guestsTooMany: t('err.guestsTooMany', { n: rules.maxGuests }),
+  emailInvalid: t('err.emailInvalid'),
+  phoneInvalid: t('err.phoneInvalid'),
+  tooLong: t('err.tooLong'),
+  privacy: t('err.privacy'),
+  'ui.timePick': t('res.timePick'),
+  'ui.timeNone': t('res.timeNone'),
+  'ui.today': t('hours.today'),
+  'ui.tomorrow': t('res.tomorrow'),
+  'ui.failed': t('res.failed'),
+  'label.date': t('res.date'),
+  'label.time': t('res.time'),
+  'label.guests': t('res.guests'),
+  'label.name': t('form.name'),
+  'label.phone': t('form.phone'),
+  'label.email': t('form.email'),
+  'label.note': t('res.note'),
+  'label.privacy': t('form.privacy2'),
+  'ui.oclock': t('res.oclock'),
+  'ui.sentTitle': t('res.done.sentTitle'),
+  'ui.mailtoTitle': t('res.done.mailtoTitle'),
+  'ui.daysDe': days('de').join('|'),
+  'ui.days': days(lang).join('|'),
+};
+---
+
+<Base lang={lang} route="reserve" title={t('seo.reserve.title')} description={t('seo.reserve.desc')}>
+  <div class="relative overflow-hidden">
+    <svg class="pointer-events-none absolute -right-24 top-10 hidden h-[34rem] w-[34rem] text-amber/15 lg:block" viewBox="0 0 200 200" aria-hidden="true">
+      <path d="M20 200V90a80 80 0 0 1 160 0v110" fill="none" stroke="currentColor" stroke-width="1"></path>
+      <path d="M38 200V92a62 62 0 0 1 124 0v108" fill="none" stroke="currentColor" stroke-width="1"></path>
+    </svg>
+
+    <div class="container-x grid gap-12 pb-20 pt-12 md:pt-20 lg:grid-cols-12 lg:gap-16">
+      <header class="lg:col-span-12">
+        <p class="kicker" data-intro>{t('res.kicker')}</p>
+        <h1 class="mt-4 text-[clamp(2.8rem,8vw,5.5rem)] font-medium text-spree" data-intro style="--i:1">{t('res.title')}</h1>
+        <p class="mt-5 max-w-2xl text-lg text-ink-soft" data-intro style="--i:2">{t('res.intro')}</p>
+      </header>
+
+      <div class="lg:col-span-7" id="reservation">
+        <div data-hide-on-success><TerraceNotice lang={lang} class="mb-8" /></div>
+
+        <form
+          id="reservation-form"
+          method="post"
+          action={noJsAction}
+          enctype={formKey ? undefined : 'text/plain'}
+          novalidate
+          class="space-y-10"
+          data-reservation-form
+        >
+          <script type="application/json" data-messages set:html={JSON.stringify(messages)} />
+
+          <div data-summary hidden tabindex="-1" role="alert" class="rounded-2xl border-2 border-brick bg-card p-5 focus:outline-none">
+            <p class="flex items-center gap-2 font-semibold text-brick-deep">
+              <Icon name="alert" class="size-5" />
+              {t('form.summary')}
+            </p>
+            <ul class="mt-2 list-disc space-y-1 pl-6 text-[0.95rem] [&_a]:underline [&_a]:underline-offset-2"></ul>
+          </div>
+          <div data-failed hidden tabindex="-1" role="alert" class="rounded-2xl border-2 border-brick bg-card p-5 focus:outline-none">
+            <p class="font-semibold text-brick-deep">{t('res.failed')}</p>
+            <p class="mt-2">
+              <a href={site.phone.href} class="font-semibold underline">{site.phone.display}</a> ·
+              <a href={`mailto:${site.email}`} class="font-semibold underline">{site.email}</a>
+            </p>
+          </div>
+
+          <!-- Spam-Schutz: unsichtbares Feld + Zeitstempel -->
+          <div class="absolute -left-[9999px] h-px w-px overflow-hidden" aria-hidden="true">
+            <label>Firma <input type="text" name="company" tabindex="-1" autocomplete="off" /></label>
+          </div>
+          <input type="hidden" name="started" value="" />
+          {formKey && <input type="hidden" name="access_key" value={formKey} />}
+          {formKey && <input type="hidden" name="subject" value="Reservierungsanfrage über die Website" />}
+          {formKey && <input type="hidden" name="redirect" value={new URL(path('reserveThanks', lang), Astro.site).href} />}
+
+          <fieldset class="rounded-[1.75rem] border border-line bg-card/70 p-5 sm:p-8">
+            <legend class="flex items-center gap-2.5 px-2 font-display text-xl font-medium text-spree sm:text-2xl">
+              <Icon name="calendar" class="size-6 text-brick" />
+              {t('res.when')}
+            </legend>
+
+            <div class="mt-2">
+              <label for="res-date" class="field-label">{t('res.date')} <span class="text-brick" aria-hidden="true">*</span></label>
+              <div class="mb-3 flex min-h-[2.4rem] flex-wrap gap-2 [.no-js_&]:hidden" data-quick-dates role="group" aria-label={t('res.date')}></div>
+              <input
+                id="res-date"
+                name="date"
+                type="date"
+                required
+                class="field tabular-nums sm:max-w-xs"
+                aria-describedby="res-date-hint res-date-error"
+              />
+              <p id="res-date-hint" class="mt-1.5 text-sm text-ink-soft">{t('res.rules.hours')}.</p>
+              <p id="res-date-error" class="field-error" data-error-for="date" aria-live="polite"></p>
+            </div>
+
+            <div class="mt-7 grid gap-7 sm:grid-cols-2">
+              <div>
+                <label for="res-time" class="field-label">{t('res.time')} <span class="text-brick" aria-hidden="true">*</span></label>
+                <select id="res-time" name="time" required class="field tabular-nums" aria-describedby="res-time-error">
+                  <option value="">{t('res.timePick')}</option>
+                  {allSlots.map((s) => <option value={s}>{lang === 'de' ? `${s} Uhr` : s}</option>)}
+                </select>
+                <p id="res-time-error" class="field-error" data-error-for="time" aria-live="polite"></p>
+              </div>
+
+              <div>
+                <label for="res-guests" class="field-label">{t('res.guests')} <span class="text-brick" aria-hidden="true">*</span></label>
+                <div class="flex items-stretch gap-2">
+                  <button type="button" class="guest-step size-[3.1rem] shrink-0 rounded-xl border-[1.5px] border-line bg-card text-xl font-semibold hover:border-spree" data-step="-1" aria-label={t('res.less')} aria-controls="res-guests">−</button>
+                  <input
+                    id="res-guests"
+                    name="guests"
+                    type="number"
+                    inputmode="numeric"
+                    min={rules.minGuests}
+                    max={rules.maxGuests}
+                    value="2"
+                    required
+                    class="field text-center text-lg font-semibold tabular-nums"
+                    aria-describedby="res-guests-hint res-guests-error"
+                  />
+                  <button type="button" class="guest-step size-[3.1rem] shrink-0 rounded-xl border-[1.5px] border-line bg-card text-xl font-semibold hover:border-spree" data-step="1" aria-label={t('res.more')} aria-controls="res-guests">+</button>
+                </div>
+                <p id="res-guests-hint" class="mt-1.5 text-sm text-ink-soft">{t('res.rules.group', { n: rules.maxGuests + 1 })}.</p>
+                <p id="res-guests-error" class="field-error" data-error-for="guests" aria-live="polite"></p>
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset class="rounded-[1.75rem] border border-line bg-card/70 p-5 sm:p-8">
+            <legend class="flex items-center gap-2.5 px-2 font-display text-xl font-medium text-spree sm:text-2xl">
+              <Icon name="users" class="size-6 text-brick" />
+              {t('res.who')}
+            </legend>
+            <div class="mt-2 grid gap-7 sm:grid-cols-2">
+              <div class="sm:col-span-2">
+                <label for="res-name" class="field-label">{t('form.name')} <span class="text-brick" aria-hidden="true">*</span></label>
+                <input id="res-name" name="name" type="text" required autocomplete="name" maxlength="120" class="field" aria-describedby="res-name-error" />
+                <p id="res-name-error" class="field-error" data-error-for="name" aria-live="polite"></p>
+              </div>
+              <div>
+                <label for="res-phone" class="field-label">{t('form.phone')} <span class="text-brick" aria-hidden="true">*</span></label>
+                <input id="res-phone" name="phone" type="tel" required autocomplete="tel" maxlength="40" class="field" aria-describedby="res-phone-error" />
+                <p id="res-phone-error" class="field-error" data-error-for="phone" aria-live="polite"></p>
+              </div>
+              <div>
+                <label for="res-email" class="field-label">{t('form.email')} <span class="text-brick" aria-hidden="true">*</span></label>
+                <input id="res-email" name="email" type="email" required autocomplete="email" maxlength="200" class="field" aria-describedby="res-email-error" />
+                <p id="res-email-error" class="field-error" data-error-for="email" aria-live="polite"></p>
+              </div>
+              <div class="sm:col-span-2">
+                <label for="res-note" class="field-label">
+                  {t('res.note')} <span class="font-normal text-ink-soft">({t('form.optional')})</span>
+                </label>
+                <textarea id="res-note" name="note" rows="3" maxlength="1000" class="field" placeholder={t('res.noteHint')} aria-describedby="res-note-error"></textarea>
+                <p id="res-note-error" class="field-error" data-error-for="note" aria-live="polite"></p>
+              </div>
+            </div>
+          </fieldset>
+
+          <div>
+            <label class="flex items-start gap-3">
+              <input type="checkbox" name="privacy" required class="check" aria-describedby="res-privacy-error" />
+              <span>
+                {t('form.privacy1')}<a href={path('privacy', lang)} class="font-semibold underline underline-offset-2" target="_blank">{t('form.privacy2')}<span class="sr-only"> {t('a11y.newWindow')}</span></a>{t('form.privacy3')}
+              </span>
+            </label>
+            <p id="res-privacy-error" class="field-error" data-error-for="privacy" aria-live="polite"></p>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-5">
+            <button type="submit" class="btn-cta !min-h-14 !px-8 text-lg" data-busy-label={t('form.sending')}>
+              <span data-label>{t('res.submit')}</span>
+              <svg class="cta-arrow size-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 8h10M9 4l4 4-4 4"></path></svg>
+            </button>
+            <p class="text-sm text-ink-soft"><span class="text-brick" aria-hidden="true">*</span> {t('form.required')}</p>
+          </div>
+        </form>
+
+        <ReservationSuccess lang={lang} />
+      </div>
+
+      <aside class="lg:col-span-5" aria-label={t('notice')}>
+        <div class="lg:sticky lg:top-28">
+          <div class="grain overflow-hidden rounded-[1.75rem] bg-spree-deep p-7 text-paper sm:p-9" data-reveal="right">
+            <ul class="space-y-5">
+              {
+                [
+                  ['clock', t('res.rules.hours')],
+                  ['info', t('res.rules.indoor')],
+                  ['users', t('res.rules.group', { n: rules.maxGuests + 1 })],
+                  ['check', t('res.rules.confirm')],
+                ].map(([icon, text]) => (
+                  <li class="flex gap-3.5">
+                    <Icon name={icon as 'clock'} class="mt-0.5 size-5 shrink-0 text-amber-soft" />
+                    <span class="text-paper/90">{text}.</span>
+                  </li>
+                ))
+              }
+            </ul>
+            <div class="mt-8 border-t border-paper/15 pt-7">
+              <p class="font-display text-xl italic text-amber-soft">{t('res.phoneAlt')}</p>
+              <a href={site.phone.href} class="mt-2 inline-flex items-center gap-3 font-display text-3xl font-medium hover:text-amber-soft">
+                <Icon name="phone" class="size-7" />
+                {site.phone.displayGrouped}
+              </a>
+              <p class="mt-2 text-paper/70"><a href={`mailto:${site.email}`} class="link-flow">{site.email}</a></p>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+</Base>
+
+<script>
+  import '../scripts/reservation-form.ts';
+</script>

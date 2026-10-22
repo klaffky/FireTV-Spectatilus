@@ -1,0 +1,19 @@
+---
+// Zwei ruhige Wellenlinien – ein Gruß an die Spree vor der Tür.
+interface Props {
+  class?: string;
+}
+const { class: className } = Astro.props;
+---
+
+<svg class={className} viewBox="0 0 1440 64" preserveAspectRatio="none" fill="none" aria-hidden="true" data-draw>
+  <path
+    d="M0 22c60 0 90-14 150-14s90 14 150 14 90-14 150-14 90 14 150 14 90-14 150-14 90 14 150 14 90-14 150-14 90 14 150 14 90-14 150-14 90 14 90 14"
+    stroke="currentColor"
+    stroke-width="1.5"></path>
+  <path
+    d="M0 44c60 0 90-14 150-14s90 14 150 14 90-14 150-14 90 14 150 14 90-14 150-14 90 14 150 14 90-14 150-14 90 14 150 14 90-14 150-14 90 14 90 14"
+    stroke="currentColor"
+    stroke-opacity=".55"
+    stroke-width="1.5"></path>
+</svg>
