@@ -1,7 +1,8 @@
-node_modules/
-dist/
-.astro/
-.vercel/
-.env
-.env.*
-!.env.example
+.gradle/
+build/
+local.properties
+.idea/
+*.iml
+.DS_Store
+captures/
+.kotlin/

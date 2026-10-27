@@ -1,0 +1,78 @@
+name: APK bauen & veröffentlichen
+
+on:
+  push:
+    branches: [main, "claude/**"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: apk-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: APK bauen
+        run: ./gradlew --no-daemon --stacktrace testReleaseUnitTest assembleRelease -PversionCode=${{ github.run_number }}
+
+      - name: APK umbenennen
+        run: cp app/build/outputs/apk/release/app-release.apk FireTV-Spectatilus.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FireTV-Spectatilus
+          path: FireTV-Spectatilus.apk
+
+      - name: GitHub-Release erstellen (fester Download-Link für den Downloader)
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.${{ github.run_number }}
+          name: FireTV Spectatilus 1.0.${{ github.run_number }}
+          target_commitish: ${{ github.sha }}
+          make_latest: true
+          files: FireTV-Spectatilus.apk
+          body: |
+            Jellyfin-Client für Fire TV mit Tailscale-Unterstützung.
+
+            **Downloader-Link (immer die neueste Version):**
+            `https://github.com/${{ github.repository }}/releases/latest/download/FireTV-Spectatilus.apk`
+
+            Anleitung: siehe README im Repository.
+
+      - name: Webseite vorbereiten
+        if: github.ref == 'refs/heads/main'
+        run: |
+          mkdir -p site
+          cp -r docs/. site/
+          cp FireTV-Spectatilus.apk site/app.apk
+
+      - uses: actions/upload-pages-artifact@v3
+        if: github.ref == 'refs/heads/main'
+        with:
+          path: site
+
+  pages:
+    if: github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

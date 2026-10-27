@@ -1,76 +1,240 @@
-# Café & Restaurant Spreeblick – Website
+# FireTV Spectatilus
 
-Neue Website für das Café & Restaurant Spreeblick im Berliner Nikolaiviertel:
-zweisprachig (DE/EN), mobil zuerst gedacht, mit Online-Reservierung.
+Ein Jellyfin-Client für den **Amazon Fire TV Stick**, aufgebaut wie die iOS/tvOS-App **Spectati**:
+großes Titelbild oben, darunter Reihen wie „Weiter ansehen“, „Als Nächstes“ und „Neu in …“, Detailseiten mit Staffeln, Episoden und Besetzung, dazu ein Player, der Dolby Vision, HDR10, Dolby Digital+ und Atmos direkt durchreicht, wenn der Fire TV das kann.
 
-**Stack:** [Astro 7](https://astro.build) (rein statisch) · Tailwind CSS 4 · selbst gehostete Schriften
-(Fraunces, Figtree). Veröffentlicht über **GitHub Pages**: https://klaffky.github.io/spreeblick-website/
+Über **Tailscale** erreichst du deine Mediathek auch von unterwegs, zum Beispiel im Hotel, bei Freunden oder im Ferienhaus. Portfreigaben am Router brauchst du dafür nicht.
 
-**Formulare ohne eigenen Server:** Reservierung und Kontakt werden im Browser geprüft (gleiche Regeln wie in
-`src/lib/reservation.ts`) und dann verschickt:
+**Download-Link für die Downloader-App (immer die neueste Version):**
 
-- **Mit Web3Forms-Schlüssel** (empfohlen): Die Anfrage geht direkt als E-Mail mit Vorgangsnummer
-  (z. B. `SB-1030-K7QX`) ans Restaurant, „Antworten“ geht an den Gast.
-- **Ohne Schlüssel:** Das E-Mail-Programm des Gastes öffnet sich mit einer fertig ausgefüllten Nachricht an
-  spreeblick@t-online.de.
-
-## Lokal starten
-
-```bash
-npm install
-npm run dev      # http://localhost:4321/spreeblick-website/
-npm test         # Reservierungsregeln (node:test)
-npm run check    # Typprüfung
-npm run build    # Ergebnis in dist/
+```
+https://github.com/klaffky/spreeblick-website/releases/latest/download/FireTV-Spectatilus.apk
 ```
 
-## Veröffentlichen (GitHub Pages)
+> Nachdem das Repository in `FireTV-Spectatilus` umbenannt wurde (siehe [unten](#repository-umbenennen)), lautet der Link
+> `https://github.com/klaffky/FireTV-Spectatilus/releases/latest/download/FireTV-Spectatilus.apk`.
+> Der alte Link funktioniert weiter, weil GitHub automatisch weiterleitet.
 
-1. Im Repository unter **Settings → Pages → Build and deployment → Source** „**GitHub Actions**“ wählen
-   (einmalig).
-2. Jeder Push auf `main` baut und veröffentlicht die Seite automatisch (`.github/workflows/deploy.yml`).
-3. Direkten Formularversand aktivieren: Auf [web3forms.com](https://web3forms.com) mit
-   spreeblick@t-online.de einen kostenlosen Access Key erstellen und unter
-   **Settings → Secrets and variables → Actions → Variables** als `PUBLIC_WEB3FORMS_KEY` eintragen.
-   Danach den Workflow neu starten (Actions → „Website veröffentlichen“ → Run workflow).
+---
 
-**Eigene Domain später:** In Pages die Domain eintragen und im Workflow beim Build
-`SITE_URL=https://www.spreeblick-nikolaiviertel.de` und `BASE_PATH=/` setzen.
+## Inhalt
 
-## Wo was gepflegt wird
+1. [Funktionen](#funktionen)
+2. [Voraussetzungen](#voraussetzungen)
+3. [Schritt 1: Tailscale auf dem Jellyfin-Server](#schritt-1-tailscale-auf-dem-jellyfin-server)
+4. [Schritt 2: Jellyfin für Tailscale vorbereiten](#schritt-2-jellyfin-für-tailscale-vorbereiten)
+5. [Schritt 3: Fire TV für fremde Apps freischalten](#schritt-3-fire-tv-für-fremde-apps-freischalten)
+6. [Schritt 4: App mit dem Downloader installieren](#schritt-4-app-mit-dem-downloader-installieren)
+7. [Schritt 5: Tailscale auf dem Fire TV](#schritt-5-tailscale-auf-dem-fire-tv)
+8. [Schritt 6: Spectatilus einrichten](#schritt-6-spectatilus-einrichten)
+9. [Live-TV mit M3U-Playlist](#live-tv-mit-m3u-playlist)
+10. [Bedienung mit der Fernbedienung](#bedienung-mit-der-fernbedienung)
+11. [Unterwegs: so funktioniert's im Alltag](#unterwegs-so-funktionierts-im-alltag)
+12. [Updates](#updates)
+13. [Fehlerbehebung](#fehlerbehebung)
+14. [Repository umbenennen](#repository-umbenennen)
+15. [Für Entwickler](#für-entwickler)
 
-| Was | Datei |
-| --- | --- |
-| Adresse, Telefon, Impressumsdaten, Hoster, Formular-Dienst | `src/config/site.ts` |
-| Öffnungszeiten, Ruhetag, Reservierungsregeln (Uhrzeiten, Vorlauf, max. Personen, Schließtage) | `src/config/site.ts` |
-| Speisekarte (DE/EN, Preise) | `src/data/menu.json` |
-| Alle Texte der Oberfläche (DE/EN) | `src/i18n/ui.ts` |
-| Datenschutzerklärung | `src/components/legal/PrivacyDe.astro`, `PrivacyEn.astro` |
-| Fotos | `src/assets/img/` |
+---
 
-Größenvarianten in der Karte („Apfelschorle 0,3 l“ / „0,5 l“) werden automatisch zu einer Zeile
-mit mehreren Preisen zusammengefasst.
+## Funktionen
 
-## Bitte vor dem Livegang prüfen
+| Bereich | Was die App kann |
+|---|---|
+| **Start** | Großes Titelbild (wechselt automatisch, mit ◀ ▶ blättern), „Weiter ansehen“, „Als Nächstes“, „Neu in Filme/Serien/…“, Bibliotheken |
+| **Filme / Serien** | Poster-Raster mit Sortierung (A–Z, neu hinzugefügt, Jahr, Bewertung) und dem Filter „Nur ungesehen“ |
+| **Live-TV** | M3U/M3U8-Playlists: nur deutsche Sender, immer in derselben Reihenfolge wie früher am Receiver (ProSieben auf 7), Bundesliga ganz vorne, Umschalten mit ▲▼ |
+| **Suche** | Filme, Serien, Episoden und Sammlungen, auch per Spracheingabe über die Mikrofon-Taste |
+| **Details** | Logo, Bewertung, Laufzeit, Qualitäts-Abzeichen (4K, Dolby Vision, HDR10, Atmos, 5.1 …), Staffeln, Episoden, Besetzung, ähnliche Titel, Gesehen/Favorit |
+| **Player** | Direktwiedergabe oder Umwandlung durch den Server (HLS), Fortsetzen an der letzten Stelle, Audio- und Untertitelwahl, nächste Folge automatisch, Fortschritt wird mit Jellyfin synchronisiert |
+| **Verbindung** | Heimnetz-Adresse wird zuerst probiert, sonst die Tailscale-Adresse. Die App zeigt an, worüber sie gerade verbunden ist |
+| **Anmeldung** | Profil-Auswahl („Wer schaut?“), Passwort oder **Quick Connect**: Code am Handy bestätigen, ohne zu tippen |
+| **Qualität** | Bitrate einstellbar (Original bis 1,5 Mbit/s), damit es auch über langsame Leitungen unterwegs flüssig läuft |
 
-- **Späteste Reservierungszeit:** Die alte Seite nennt nur „ab 12 Uhr“. Online reservierbar sind
-  derzeit 12:00–21:00 Uhr im 30-Minuten-Takt, am selben Tag mit 2 Stunden Vorlauf, bis 10 Personen
-  und bis 90 Tage im Voraus. Anpassen in `reservationRules`.
-- **Datenschutzerklärung:** Eingetragen sind GitHub Pages als Hoster und Web3Forms als Formular-Dienst.
-  Bitte juristisch gegenlesen lassen. Für die gewerbliche Nutzung ist ein Hoster mit
-  Auftragsverarbeitungsvertrag (z. B. eine eigene Domain bei einem deutschen Anbieter) die sauberere Lösung.
-- **Fotos:** Verwendet werden die drei Bilder der bisherigen Website. Das Hero-Hintergrundbild
-  (Braten mit Möhren) wirkt wie ein Stockfoto. Bitte durch ein eigenes Foto ersetzen und gern
-  hochauflösende Aufnahmen von Gastraum, Wintergarten und Spreeblick ergänzen (gleicher Dateiname
-  in `src/assets/img/` genügt).
-- **Impressum:** „§ 5 TMG“ wurde durch „§ 5 DDG“ ersetzt (das TMG gilt seit Mai 2024 nicht mehr).
+## Voraussetzungen
 
-## Barrierefreiheit & Bewegung
+- **Fire TV mit Fire OS**: Fire TV Stick (ab 2. Generation), Fire TV Stick Lite, 4K, 4K Max, Fire TV Cube oder ein Fire-TV-Fernseher.
+  ⚠️ Geräte mit **Vega OS** (z. B. *Fire TV Stick 4K Select*, ab 2025) können **keine** APK-Dateien installieren. Du findest das Betriebssystem unter *Einstellungen → Mein Fire TV → Info*.
+- Ein laufender **Jellyfin-Server** (ab Version 10.8, empfohlen 10.9 oder neuer).
+- Ein kostenloses **Tailscale-Konto** ([tailscale.com](https://tailscale.com)), z. B. per Google-, Microsoft- oder Apple-Anmeldung.
 
-- Scroll-Animationen (Einblenden, Hero-Parallax, gezeichnete Linien) laufen nur mit JavaScript und
-  nur, wenn das System **keine reduzierte Bewegung** verlangt. Ohne JS ist alles sofort sichtbar.
-- Die Speisekarte blendet kurz und mit kleinem Weg ein. Beim Sprung über die Kategorie-Navigation
-  wird alles bis zum Ziel sofort angezeigt. Formularfelder werden nie animiert.
-- Mit JavaScript gibt es Live-Validierung, eine Fehlerübersicht mit Sprunglinks und Fokusführung. Ohne
-  JavaScript senden die Formulare direkt an Web3Forms (mit Weiterleitung auf eine Danke-Seite) bzw. per
-  `mailto:`.
+---
+
+## Schritt 1: Tailscale auf dem Jellyfin-Server
+
+Tailscale baut ein privates Netz zwischen deinen Geräten auf. Jedes Gerät bekommt eine feste Adresse der Form `100.x.y.z`.
+
+**Windows / macOS**
+1. [tailscale.com/download](https://tailscale.com/download) öffnen, installieren und mit deinem Konto anmelden.
+2. Auf das Tailscale-Symbol in der Taskleiste bzw. Menüleiste klicken: Dort steht die IP-Adresse dieses Rechners (`100.…`).
+
+**Linux (Server, Raspberry Pi)**
+```bash
+curl -fsSL https://tailscale.com/install.sh | sh
+sudo tailscale up
+tailscale ip -4        # zeigt die 100.x.y.z-Adresse
+```
+
+**Synology / QNAP / Unraid / TrueNAS**: Tailscale gibt es im jeweiligen Paket- bzw. App-Zentrum. Danach anmelden und die IP ablesen.
+
+**Docker**: Läuft Jellyfin in Docker, installiere Tailscale am einfachsten **auf dem Host-Rechner**. Jellyfin ist dann unter `http://<Tailscale-IP-des-Hosts>:8096` erreichbar.
+
+**Tipp: MagicDNS.** In der [Tailscale-Admin-Konsole](https://login.tailscale.com/admin/machines) bekommt jedes Gerät auch einen Namen, z. B. `jellyfin.tail1234.ts.net`. Den kannst du statt der IP eintragen.
+
+> Prüfen: Öffne am Handy (mit aktivem Tailscale) im Browser `http://100.x.y.z:8096`. Erscheint Jellyfin, ist der Server bereit.
+
+## Schritt 2: Jellyfin für Tailscale vorbereiten
+
+Im Jellyfin-Web-Dashboard (*Dashboard → Netzwerk*):
+
+1. **„Fernverbindungen zu diesem Server zulassen“** muss **an** sein (Standard).
+2. Empfohlen: Unter **„LAN-Netzwerke“** zusätzlich `100.64.0.0/10` eintragen und speichern.
+   Dann behandelt Jellyfin Tailscale-Geräte wie das Heimnetz, und die Bitrate-Begrenzung für „Internet“-Zugriffe greift nicht ungewollt.
+3. Optional für die bequeme Anmeldung: *Dashboard → Allgemein → **Quick Connect aktivieren***.
+
+## Schritt 3: Fire TV für fremde Apps freischalten
+
+1. Auf dem Fire TV: **Einstellungen → Mein Fire TV → Info**.
+2. Den Eintrag mit dem Gerätenamen (z. B. „Fire TV Stick 4K“) markieren und **7-mal schnell OK drücken**, bis „Du bist jetzt Entwickler“ erscheint.
+3. Eine Ebene zurück: **Mein Fire TV → Entwickleroptionen**.
+4. **„Apps unbekannter Herkunft installieren“** öffnen (auf älteren Geräten heißt es „Apps unbekannter Herkunft“ → *AN*).
+
+Den Downloader schaltest du hier erst nach Schritt 4 frei, sobald er installiert ist.
+
+## Schritt 4: App mit dem Downloader installieren
+
+1. Startbildschirm → **Suche (Lupe)** → „**Downloader**“ eingeben → die orange App von *AFTVnews* → **Herunterladen**.
+2. Zurück zu *Einstellungen → Mein Fire TV → Entwickleroptionen → Apps unbekannter Herkunft installieren* → **Downloader: AN**.
+3. Downloader öffnen, die Berechtigungsabfrage (Dateizugriff) mit **Zulassen** bestätigen.
+4. Links **Home** wählen, ins Adressfeld klicken und eingeben:
+   ```
+   https://github.com/klaffky/spreeblick-website/releases/latest/download/FireTV-Spectatilus.apk
+   ```
+   → **Go**.
+5. Nach dem Download erscheint der Installationsdialog → **Installieren** → **Fertig**.
+6. Downloader fragt, ob die APK-Datei gelöscht werden soll → **Löschen** → nochmal **Löschen** (spart Speicher).
+7. Die App heißt **FireTV Spectatilus** und liegt unter *Apps & Kanäle* (Symbol mit drei Quadraten auf dem Startbildschirm). Tipp: In der App-Übersicht die App markieren, **Menü-Taste (☰) → Verschieben**, um sie nach vorne zu holen.
+
+> **Kürzer tippen:** Auf [go.aftvnews.com](https://go.aftvnews.com) kannst du für den langen Link kostenlos einen Zahlencode anlegen. Den gibst du dann im Downloader statt der Adresse ein.
+
+## Schritt 5: Tailscale auf dem Fire TV
+
+1. Startbildschirm → **Suche** → „**Tailscale**“ → herunterladen (offiziell im Amazon Appstore).
+2. Tailscale öffnen → **Log in**. Ein QR-Code und eine Adresse erscheinen. Scanne den QR-Code mit dem Handy und melde dich dort mit **demselben Konto** wie am Server an.
+3. Die Frage nach der **VPN-Verbindung** mit **OK** bestätigen.
+4. Der Schalter in Tailscale steht auf **Active** bzw. **Connected**, und der Server erscheint in der Geräteliste.
+
+> Nach einem Neustart des Fire TV verbindet sich Tailscale meistens von selbst. Falls nicht: Tailscale kurz öffnen und einschalten. Spectatilus hat dafür einen Knopf **„Tailscale öffnen“**.
+
+## Schritt 6: Spectatilus einrichten
+
+1. **FireTV Spectatilus** öffnen. Rechts siehst du, ob Tailscale verbunden ist (grüner Punkt).
+2. **Tailscale-Adresse** anklicken und die Server-Adresse eingeben, z. B. `100.101.102.103` oder `jellyfin.tail1234.ts.net`.
+   Der Port `:8096` und `http://` werden automatisch ergänzt.
+3. Optional: **Heimnetz-Adresse** eintragen, z. B. `192.168.178.20`. Zu Hause verbindet die App dann direkt (schneller), unterwegs automatisch über Tailscale.
+4. **Verbinden** drücken.
+5. **„Wer schaut?“**: Profil wählen und Passwort eingeben, oder
+   **Quick Connect** wählen: Es erscheint ein 6-stelliger Code. Am Handy in der Jellyfin-App bzw. im Browser *Profil → Quick Connect* öffnen, den Code eingeben, fertig.
+6. Unter **Einstellungen** in der App kannst du einstellen:
+   - **Streaming-Qualität:** zu Hause „Original“. Unterwegs mit langsamem Internet **6–10 Mbit/s**, dann wandelt der Server passend um.
+   - **Audiosprache** (Deutsch/Englisch/Original), **Untertitel**, **Nächste Folge automatisch**.
+
+## Live-TV mit M3U-Playlist
+
+1. In der App oben den Reiter **Live-TV** öffnen und **„+ Playlist“** wählen.
+2. Die Adresse deiner M3U- oder M3U8-Liste eingeben, z. B. vom IPTV-Anbieter oder vom eigenen Server. Mehrere Playlists sind möglich; du wechselst oben per Knopf zwischen ihnen.
+3. Die App lädt die Liste, sortiert sie und speichert das Ergebnis. Danach startet sie sofort. Ist der Stand älter als 12 Stunden, frischt sie ihn im Hintergrund auf. **↻ Aktualisieren** lädt sofort neu.
+
+**So wird sortiert, in jeder Playlist gleich:**
+
+| Platz | Sender | | Platz | Sender |
+|---|---|---|---|---|
+| ★1, ★2 … | **Bundesliga-Sender** (z. B. Sky Sport Bundesliga 1, 2 …) | | 9 | 3sat |
+| 1 | Das Erste | | 10 | arte |
+| 2 | ZDF | | 11–33 | ZDFneo, ZDFinfo, ONE, tagesschau24, phoenix, KiKA, Super RTL, NITRO, RTLup, ntv, WELT, sixx, ProSieben MAXX, SAT.1 Gold, kabel eins Doku, DMAX, TLC, Tele 5, SPORT1, Eurosport 1, Comedy Central, Disney Channel, Nickelodeon |
+| 3 | RTL | | 34–42 | Dritte: BR, WDR, NDR, MDR, hr, SWR, rbb, Radio Bremen, SR |
+| 4 | SAT.1 | | 43–53 | Sky Sport News, Sky One, Sky Atlantic, Sky Cinema Premieren, Sky Krimi, ServusTV, MTV, DELUXE MUSIC, Bibel TV, QVC, HSE |
+| 5 | VOX | | ab 100 | alle übrigen deutschen Sender |
+| 6 | RTLZWEI | | | |
+| 7 | **ProSieben** | | | |
+| 8 | kabel eins | | | |
+
+- Sender ab Platz 100 bekommen ihre Nummer beim ersten Auftauchen und **behalten sie für immer**, auch in anderen Playlists.
+- **Nur deutsche Sender:** Erkannt an „DE“, „GER“ oder „Deutschland“ in Gruppe oder Name, an `tvg-country="DE"`, an einer `.de`-Kennung oder am Sendernamen. Alles mit anderer Länderkennung (AT, CH, UK, FR, …) und alles Unbekannte wird ausgeblendet.
+- Gibt es einen Sender mehrfach (HD, FHD, SD), zeigt die App ihn einmal und nutzt die beste Qualität. Fällt dieser Stream aus, schaltet sie automatisch auf die nächste Variante um.
+
+**Fernbedienung beim Fernsehen:**
+
+| Taste | Funktion |
+|---|---|
+| **▲ / ▼** | Nächster / vorheriger Sender (wie P+ / P−) |
+| **◀** | Zurück zum zuletzt gesehenen Sender |
+| **▶** | Senderinfo einblenden |
+| **OK** | Senderliste (mit ▲▼ wählen, OK schaltet um) |
+| **⏯** | Pause |
+| **0–9** | Direktwahl, sofern die Fernbedienung Zifferntasten hat |
+| **↩ Zurück** | Live-TV beenden |
+
+## Bedienung mit der Fernbedienung
+
+| Taste | Im Menü | Im Player |
+|---|---|---|
+| **◀ ▶ ▲ ▼** | Navigieren | ◀ ▶ bei ausgeblendeter Leiste: 10 s zurück / 30 s vor; sonst Steuerleiste bedienen |
+| **OK** | Auswählen | Steuerleiste einblenden, Pause/Wiedergabe |
+| **⏯** | – | Pause / Weiter |
+| **⏪ ⏩** | – | Spulen |
+| **↩ Zurück** | Eine Ebene zurück, auf „Start“ wechseln, App schließen | Player beenden (Position wird gespeichert) |
+| **🎤 Mikrofon** | In Eingabefeldern: Spracheingabe | – |
+
+Audio- und Untertitelspur wählst du im Player über das **Zahnrad/Untertitel-Symbol** in der Steuerleiste. Auf dem Startbildschirm blätterst du im großen Titelbild mit ◀ (auf „Fortsetzen/Abspielen“) bzw. ▶ (auf „Mehr Infos“).
+
+## Unterwegs: so funktioniert's im Alltag
+
+1. Fire TV Stick ins Hotel/Ferien-WLAN bringen und verbinden.
+2. **Tailscale** öffnen, Verbindung prüfen (meist schon aktiv).
+3. **Spectatilus** öffnen. Oben rechts steht **„Tailscale“**, die Mediathek ist da.
+
+Zu Hause steht dort **„Heimnetz“**, wenn du die Heimnetz-Adresse eingetragen hast.
+
+## Updates
+
+Jeder neue Stand im Repository erzeugt automatisch ein neues Release. Zum Aktualisieren den **gleichen Downloader-Link** erneut öffnen und **Installieren** wählen. Die neue Version überschreibt die alte, Anmeldung und Einstellungen bleiben erhalten.
+
+## Fehlerbehebung
+
+| Problem | Lösung |
+|---|---|
+| **„Server nicht erreichbar“** | Ist Tailscale auf dem Fire TV *und* auf dem Server aktiv? Im Tailscale-Fenster des Fire TV muss der Server als „online“ erscheinen. Adresse prüfen, Port `8096`. |
+| **Downloader meldet „Error 404“** | Link genau abtippen (Groß/Klein: `FireTV-Spectatilus.apk`). Oder einen Kurzcode über go.aftvnews.com anlegen. |
+| **„App nicht installiert“** | Freigabe für den Downloader in den Entwickleroptionen prüfen; genug freier Speicher (> 100 MB)? Bei einer vorher anders signierten Version die alte App zuerst deinstallieren. |
+| **Video ruckelt / lädt ständig** | In den App-Einstellungen eine niedrigere Streaming-Qualität wählen (6 oder 3 Mbit/s). Upload-Geschwindigkeit des Heimanschlusses ist meist der Engpass. |
+| **Ton fehlt (DTS/TrueHD)** | Der Fire TV kann DTS nicht selbst dekodieren. Die App lässt dann automatisch vom Server umwandeln. Hilft das nicht, Qualität auf 20 Mbit/s stellen (erzwingt Umwandlung). |
+| **„Anmeldung abgelaufen“** | In der App *Einstellungen → Abmelden* und neu anmelden. |
+| **TLS-Fehler** | Für die `100.x`-IP immer `http://` nutzen. `https://` nur mit einem `*.ts.net`-Namen und eingerichtetem `tailscale serve`/HTTPS. |
+| **Tailscale nach Neustart aus** | Tailscale-App öffnen und einschalten, oder in Spectatilus *Einstellungen → Tailscale-App öffnen*. |
+
+## Repository umbenennen
+
+Das Repository heißt noch `spreeblick-website`. So benennst du es in **FireTV-Spectatilus** um (GitHub erlaubt keine Leerzeichen im Namen):
+
+1. Auf GitHub das Repository öffnen → **Settings** → **General**.
+2. Unter **Repository name** `FireTV-Spectatilus` eintragen → **Rename**.
+3. Lokal (falls geklont): `git remote set-url origin https://github.com/klaffky/FireTV-Spectatilus.git`
+
+Alle alten Links, auch der Downloader-Link, leiten automatisch weiter.
+
+## Für Entwickler
+
+- Kotlin, Jetpack Compose, Media3 ExoPlayer, Coil, OkHttp. minSdk 22 (Fire OS 5), targetSdk 34.
+- Bauen: `./gradlew assembleRelease` (JDK 17 und Android SDK nötig). Die APK liegt unter `app/build/outputs/apk/release/`.
+- CI: `.github/workflows/build-apk.yml` baut bei jedem Push und veröffentlicht ein GitHub-Release mit `FireTV-Spectatilus.apk`. Auf `main` wird zusätzlich eine kleine Download-Seite (`docs/`) auf GitHub Pages veröffentlicht.
+- Signatur: `signing/spectatilus.jks` (Passwort `spectatilus`) liegt bewusst im Repo, damit jede CI-Version die vorherige per Update überschreiben kann. Für einen eigenen, geheimen Schlüssel die Umgebungsvariablen `SIGNING_STORE_FILE`, `SIGNING_STORE_PASSWORD`, `SIGNING_KEY_ALIAS`, `SIGNING_KEY_PASSWORD` setzen.
+
+Projektstruktur:
+
+```
+app/src/main/java/de/klaffky/spectatilus/
+├── data/        Jellyfin-API, Modelle, Geräteprofil (Codecs), Session (Heimnetz ↔ Tailscale)
+├── ui/          Compose-Oberfläche: Start, Filme, Serien, Suche, Details, Einstellungen, Einrichtung
+└── player/      PlayerActivity (ExoPlayer, Fortschrittsmeldung, nächste Folge)
+```
