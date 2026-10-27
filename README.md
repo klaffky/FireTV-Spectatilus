@@ -27,12 +27,13 @@ https://github.com/klaffky/spreeblick-website/releases/latest/download/FireTV-Sp
 6. [Schritt 4: App mit dem Downloader installieren](#schritt-4-app-mit-dem-downloader-installieren)
 7. [Schritt 5: Tailscale auf dem Fire TV](#schritt-5-tailscale-auf-dem-fire-tv)
 8. [Schritt 6: Spectatilus einrichten](#schritt-6-spectatilus-einrichten)
-9. [Bedienung mit der Fernbedienung](#bedienung-mit-der-fernbedienung)
-10. [Unterwegs: so funktioniert's im Alltag](#unterwegs-so-funktionierts-im-alltag)
-11. [Updates](#updates)
-12. [Fehlerbehebung](#fehlerbehebung)
-13. [Repository umbenennen](#repository-umbenennen)
-14. [Für Entwickler](#für-entwickler)
+9. [Live-TV mit M3U-Playlist](#live-tv-mit-m3u-playlist)
+10. [Bedienung mit der Fernbedienung](#bedienung-mit-der-fernbedienung)
+11. [Unterwegs: so funktioniert's im Alltag](#unterwegs-so-funktionierts-im-alltag)
+12. [Updates](#updates)
+13. [Fehlerbehebung](#fehlerbehebung)
+14. [Repository umbenennen](#repository-umbenennen)
+15. [Für Entwickler](#für-entwickler)
 
 ---
 
@@ -42,6 +43,7 @@ https://github.com/klaffky/spreeblick-website/releases/latest/download/FireTV-Sp
 |---|---|
 | **Start** | Großes Titelbild (wechselt automatisch, mit ◀ ▶ blättern), „Weiter ansehen“, „Als Nächstes“, „Neu in Filme/Serien/…“, Bibliotheken |
 | **Filme / Serien** | Poster-Raster mit Sortierung (A–Z, neu hinzugefügt, Jahr, Bewertung) und dem Filter „Nur ungesehen“ |
+| **Live-TV** | M3U/M3U8-Playlists: nur deutsche Sender, immer in derselben Reihenfolge wie früher am Receiver (ProSieben auf 7), Bundesliga ganz vorne, Umschalten mit ▲▼ |
 | **Suche** | Filme, Serien, Episoden und Sammlungen, auch per Spracheingabe über die Mikrofon-Taste |
 | **Details** | Logo, Bewertung, Laufzeit, Qualitäts-Abzeichen (4K, Dolby Vision, HDR10, Atmos, 5.1 …), Staffeln, Episoden, Besetzung, ähnliche Titel, Gesehen/Favorit |
 | **Player** | Direktwiedergabe oder Umwandlung durch den Server (HLS), Fortsetzen an der letzten Stelle, Audio- und Untertitelwahl, nächste Folge automatisch, Fortschritt wird mit Jellyfin synchronisiert |
@@ -136,6 +138,42 @@ Den Downloader schaltest du hier erst nach Schritt 4 frei, sobald er installiert
 6. Unter **Einstellungen** in der App kannst du einstellen:
    - **Streaming-Qualität:** zu Hause „Original“. Unterwegs mit langsamem Internet **6–10 Mbit/s**, dann wandelt der Server passend um.
    - **Audiosprache** (Deutsch/Englisch/Original), **Untertitel**, **Nächste Folge automatisch**.
+
+## Live-TV mit M3U-Playlist
+
+1. In der App oben den Reiter **Live-TV** öffnen und **„+ Playlist“** wählen.
+2. Die Adresse deiner M3U- oder M3U8-Liste eingeben, z. B. vom IPTV-Anbieter oder vom eigenen Server. Mehrere Playlists sind möglich; du wechselst oben per Knopf zwischen ihnen.
+3. Die App lädt die Liste, sortiert sie und speichert das Ergebnis. Danach startet sie sofort. Ist der Stand älter als 12 Stunden, frischt sie ihn im Hintergrund auf. **↻ Aktualisieren** lädt sofort neu.
+
+**So wird sortiert, in jeder Playlist gleich:**
+
+| Platz | Sender | | Platz | Sender |
+|---|---|---|---|---|
+| ★1, ★2 … | **Bundesliga-Sender** (z. B. Sky Sport Bundesliga 1, 2 …) | | 9 | 3sat |
+| 1 | Das Erste | | 10 | arte |
+| 2 | ZDF | | 11–33 | ZDFneo, ZDFinfo, ONE, tagesschau24, phoenix, KiKA, Super RTL, NITRO, RTLup, ntv, WELT, sixx, ProSieben MAXX, SAT.1 Gold, kabel eins Doku, DMAX, TLC, Tele 5, SPORT1, Eurosport 1, Comedy Central, Disney Channel, Nickelodeon |
+| 3 | RTL | | 34–42 | Dritte: BR, WDR, NDR, MDR, hr, SWR, rbb, Radio Bremen, SR |
+| 4 | SAT.1 | | 43–53 | Sky Sport News, Sky One, Sky Atlantic, Sky Cinema Premieren, Sky Krimi, ServusTV, MTV, DELUXE MUSIC, Bibel TV, QVC, HSE |
+| 5 | VOX | | ab 100 | alle übrigen deutschen Sender |
+| 6 | RTLZWEI | | | |
+| 7 | **ProSieben** | | | |
+| 8 | kabel eins | | | |
+
+- Sender ab Platz 100 bekommen ihre Nummer beim ersten Auftauchen und **behalten sie für immer**, auch in anderen Playlists.
+- **Nur deutsche Sender:** Erkannt an „DE“, „GER“ oder „Deutschland“ in Gruppe oder Name, an `tvg-country="DE"`, an einer `.de`-Kennung oder am Sendernamen. Alles mit anderer Länderkennung (AT, CH, UK, FR, …) und alles Unbekannte wird ausgeblendet.
+- Gibt es einen Sender mehrfach (HD, FHD, SD), zeigt die App ihn einmal und nutzt die beste Qualität. Fällt dieser Stream aus, schaltet sie automatisch auf die nächste Variante um.
+
+**Fernbedienung beim Fernsehen:**
+
+| Taste | Funktion |
+|---|---|
+| **▲ / ▼** | Nächster / vorheriger Sender (wie P+ / P−) |
+| **◀** | Zurück zum zuletzt gesehenen Sender |
+| **▶** | Senderinfo einblenden |
+| **OK** | Senderliste (mit ▲▼ wählen, OK schaltet um) |
+| **⏯** | Pause |
+| **0–9** | Direktwahl, sofern die Fernbedienung Zifferntasten hat |
+| **↩ Zurück** | Live-TV beenden |
 
 ## Bedienung mit der Fernbedienung
 
