@@ -297,7 +297,7 @@ private fun Hero(
             }
             Spacer(Modifier.width(14.dp))
             Box(Modifier.onFocusChanged { infoFocused = it.hasFocus }) {
-                PillButton("Mehr Infos", onClick = onInfo, icon = "ⓘ", focusKey = "hero/info")
+                PillButton("Mehr Infos", onClick = onInfo, focusKey = "hero/info")
             }
             Spacer(Modifier.weight(1f))
             if (count > 1) {

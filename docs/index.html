@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FireTV Spectatilus</title>
+<style>
+  :root { color-scheme: dark; --bg:#07090e; --card:#12151d; --accent:#8b6cff; --soft:#b9a8ff; --text:#f4f5f8; --dim:#a3a8b8; }
+  body { margin:0; background:var(--bg); color:var(--text); font:16px/1.6 system-ui, sans-serif; }
+  main { max-width:720px; margin:0 auto; padding:48px 20px; }
+  h1 { font-size:36px; margin:0 0 6px; }
+  p { color:var(--dim); }
+  .dl { display:inline-block; margin:18px 0; padding:16px 28px; border-radius:99px; background:var(--accent); color:#fff; font-weight:700; font-size:20px; text-decoration:none; }
+  .dl:focus, .dl:hover { background:#fff; color:var(--bg); }
+  code { background:var(--card); padding:2px 8px; border-radius:6px; color:var(--soft); word-break:break-all; }
+  ol { color:var(--dim); } li { margin:6px 0; }
+</style>
+</head>
+<body>
+<main>
+  <h1>▶ FireTV Spectatilus</h1>
+  <p>Jellyfin-App für den Fire TV Stick, mit Tailscale auch von unterwegs.</p>
+  <a class="dl" href="app.apk">APK herunterladen</a>
+  <p>Im <b>Downloader</b> auf dem Fire TV kannst du statt dieser Seite auch direkt die Datei laden:<br>
+     <code>https://github.com/klaffky/spreeblick-website/releases/latest/download/FireTV-Spectatilus.apk</code></p>
+  <ol>
+    <li>Fire TV: Einstellungen → Mein Fire TV → Entwickleroptionen → Apps unbekannter Herkunft → Downloader erlauben.</li>
+    <li>Im Downloader diese Seite oder den Link oben öffnen, „APK herunterladen“ wählen, dann Installieren.</li>
+    <li>Tailscale aus dem Amazon Appstore installieren und anmelden.</li>
+    <li>Spectatilus öffnen und die Tailscale-Adresse deines Jellyfin-Servers eintragen.</li>
+  </ol>
+  <p>Die ausführliche Anleitung steht im <a style="color:var(--soft)" href="https://github.com/klaffky/spreeblick-website#readme">README</a>.</p>
+</main>
+</body>
+</html>

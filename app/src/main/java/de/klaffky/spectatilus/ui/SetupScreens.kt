@@ -293,7 +293,7 @@ fun LoginScreen(app: AppState, screen: Screen.Login) {
                         }
                         if (screen.quickConnect) {
                             item {
-                                UserTile("Quick Connect", null, remember { FocusRequester() }, symbol = "⌁") {
+                                UserTile("Quick Connect", null, remember { FocusRequester() }, symbol = "↔") {
                                     scope.launch {
                                         runCatching { api.quickConnectInitiate() }
                                             .onSuccess { (secret, c) -> qcCode = "$c|$secret" }

@@ -268,7 +268,7 @@ private fun ActionRow(app: AppState, screen: Screen.Details, item: Item, playReq
         }
         PillButton(
             if (item.played) "Gesehen" else "Als gesehen markieren",
-            icon = if (item.played) "✓" else "○",
+            icon = if (item.played) "✓" else null,
             focusKey = "act/played",
             onClick = {
                 scope.launch {
@@ -280,7 +280,7 @@ private fun ActionRow(app: AppState, screen: Screen.Details, item: Item, playReq
         )
         PillButton(
             if (item.favorite) "Favorit" else "Merken",
-            icon = if (item.favorite) "♥" else "♡",
+            icon = if (item.favorite) "♥" else "+",
             focusKey = "act/fav",
             onClick = {
                 scope.launch {
