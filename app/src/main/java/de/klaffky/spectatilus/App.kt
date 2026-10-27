@@ -6,12 +6,14 @@ import coil.ImageLoaderFactory
 import coil.disk.DiskCache
 import coil.memory.MemoryCache
 import de.klaffky.spectatilus.data.JellyfinApi
+import de.klaffky.spectatilus.data.LiveTvStore
 import de.klaffky.spectatilus.data.Session
 
 class App : Application(), ImageLoaderFactory {
     override fun onCreate() {
         super.onCreate()
         Session.init(this)
+        LiveTvStore.init(this)
     }
 
     override fun newImageLoader(): ImageLoader = ImageLoader.Builder(this)

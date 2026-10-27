@@ -202,7 +202,8 @@ fun MainScreen(app: AppState) {
         0 -> HomeScreen(app)
         1 -> LibraryScreen(app, app.movies, "Filme", showTopBar = true)
         2 -> LibraryScreen(app, app.shows, "Serien", showTopBar = true)
-        3 -> SearchScreen(app)
+        3 -> LiveTvScreen(app)
+        4 -> SearchScreen(app)
         else -> SettingsScreen(app)
     }
 }
@@ -221,7 +222,7 @@ fun BrandMark(big: Boolean = false) {
     }
 }
 
-private val TABS = listOf("Start", "Filme", "Serien", "Suche", "Einstellungen")
+private val TABS = listOf("Start", "Filme", "Serien", "Live-TV", "Suche", "Einstellungen")
 
 /** Tab-Leiste oben (tvOS-Stil). Wird von jedem Haupt-Screen als oberstes Element eingebunden. */
 @Composable

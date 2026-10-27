@@ -78,6 +78,17 @@ class LibraryState(val types: String?, val parentId: String?, val recursive: Boo
     }
 }
 
+class LiveState {
+    var playlists by mutableStateOf<List<de.klaffky.spectatilus.data.Playlist>>(emptyList())
+    var selected by mutableStateOf<String?>(null)
+    var list by mutableStateOf<de.klaffky.spectatilus.data.ChannelList?>(null)
+    var loading by mutableStateOf(false)
+    var error by mutableStateOf<String?>(null)
+    var confirmDelete by mutableStateOf(false)
+    val gridState = LazyGridState()
+    val focus = FocusMemory()
+}
+
 class SearchState {
     var query by mutableStateOf("")
     var results by mutableStateOf<List<Item>>(emptyList())
@@ -107,13 +118,15 @@ class AppState {
     var movies = LibraryState("Movie", null)
     var shows = LibraryState("Series", null)
     var search = SearchState()
+    val live = LiveState()
     val settingsFocus = FocusMemory()
 
     fun memoryForTab(i: Int): FocusMemory = when (i) {
         0 -> home.focus
         1 -> movies.focus
         2 -> shows.focus
-        3 -> search.focus
+        3 -> live.focus
+        4 -> search.focus
         else -> settingsFocus
     }
 

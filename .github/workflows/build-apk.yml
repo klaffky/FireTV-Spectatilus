@@ -28,7 +28,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
 
       - name: APK bauen
-        run: ./gradlew --no-daemon --stacktrace assembleRelease -PversionCode=${{ github.run_number }}
+        run: ./gradlew --no-daemon --stacktrace testReleaseUnitTest assembleRelease -PversionCode=${{ github.run_number }}
 
       - name: APK umbenennen
         run: cp app/build/outputs/apk/release/app-release.apk FireTV-Spectatilus.apk
